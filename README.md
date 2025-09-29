@@ -17,9 +17,9 @@
 3. Создайте файл `.env` в корне проекта и добавьте в него ваш NASA API ключ:
  ```bash
     NASA_API_KEY=ваш_ключ_от_nasa
-    TG_TOKEN=ваш_api_токен_бота
-    CHANNEL_ID=@имя_вашего_канала
-    TG_INTERVAL_MINUTES=240 (интервал публикации в минутах (по умолчанию — 240 = 4 часа))
+    TELEGRAM_TOKEN=ваш_api_токен_бота
+    TELEGRAM_CHAT_ID=@имя_вашего_канала
+    TELEGRAM_INTERVAL_MINUTES=240 (интервал публикации в минутах (по умолчанию — 240 = 4 часа))
 ```
 
 API ключ можно получить бесплатно на [https://api.nasa.gov/](https://api.nasa.gov/).

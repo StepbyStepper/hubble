@@ -34,12 +34,12 @@ def main():
     parser.add_argument("--interval", type=int, help="Интервал публикации (в минутах)")
     args = parser.parse_args()
 
-    token = os.getenv("TG_TOKEN")
-    channel = os.getenv("CHANNEL_ID")
-    interval_minutes = args.interval or int(os.getenv("TG_INTERVAL_MINUTES", 240))
+    token = os.getenv("TELEGRAM_TOKEN")
+    channel = os.getenv("TELEGRAM_CHAT_ID")
+    interval_minutes = args.interval or int(os.getenv("TELEGRAM_INTERVAL_MINUTES", 240))
 
     if not token or not channel:
-        print("Ошибка: TG_TOKEN или CHANNEL_ID не указаны.")
+        print("Ошибка: TELEGRAM_TOKEN или TELEGRAM_CHAT_ID не указаны.")
         return
 
     bot = telegram.Bot(token=token)
