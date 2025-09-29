@@ -17,7 +17,7 @@ def download_image(image_url: str, save_path: str):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     response = requests.get(image_url, stream=True)
 
-    if response.status_code == 200:
+    if not response.ok:
         with open(save_path, "wb") as file:
             for chunk in response.iter_content(1024):
                 file.write(chunk)

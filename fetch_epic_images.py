@@ -9,7 +9,7 @@ def fetch_epic_images(api_key, count=5):
     params = {"api_key": api_key}
     response = requests.get(url, params=params)
 
-    if response.status_code != 200:
+    if not response.ok:
         print(f"Ошибка API EPIC: {response.status_code}")
         return
 
