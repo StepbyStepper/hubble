@@ -9,7 +9,7 @@ def fetch_nasa_apod(api_key, count=5):
     params = {"api_key": api_key, "count": count}
     response = requests.get(url, params=params)
 
-    if response.status_code != 200:
+    if not response.ok:
         print(f"Ошибка API NASA: {response.status_code}")
         return
 
