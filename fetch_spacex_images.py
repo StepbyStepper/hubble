@@ -44,16 +44,23 @@ def main():
 
     try:
         photos = get_spacex_photos(args.launch_id)
-        if not photos:
-            print("Нет фото для скачивания.")
-            return
-
-        for url in photos:
-            filename = get_filename_from_url(url)
-            save_path = os.path.join("images", filename)
-            download_image(url, save_path)
     except requests.RequestException as e:
         print(f"Ошибка запроса: {e}")
+
+    if not photos:
+        print("Нет фото для скачивания.")
+        return
+
+    for url in photos:
+        filename = get_filename_from_url(url)
+        save_path = os.path.join("images", filename)
+        try:
+            download_image(url, save_path)
+        except requests.RequestException as e:
+            print(f"Ошибка при скачивании {url}: {e}")
+        except OSError as e:
+            print(f"Ошибка при сохранении {save_path}: {e}")
+
 
 if __name__ == "__main__":
     main()
