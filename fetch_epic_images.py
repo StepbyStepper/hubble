@@ -1,6 +1,7 @@
 import argparse
 import os
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 from utils import download_image, get_filename_from_url
 
@@ -21,10 +22,43 @@ def fetch_epic_data(api_key):
     return data
 
 
+def parse_epic_date(date_str):
+    """
+    Парсит дату из поля item['date'].
+    Несколько форматов: fromisoformat, strptime.
+    Возвращает datetime.
+    """
+    if not date_str:
+        raise ValueError("Пустая строка даты")
+
+    try:
+        return datetime.fromisoformat(date_str)
+    except Exception:
+        pass
+
+    formats = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d")
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt)
+        except Exception:
+            continue
+
+    try:
+        date_only = date_str.split()[0]
+        return datetime.strptime(date_only, "%Y-%m-%d")
+    except Exception:
+        raise ValueError(f"Не удалось распарсить дату: {date_str}")
+
+
 def build_epic_image_url(item, api_key):
     """Строит URL изображения EPIC по данным item"""
-    date = item["date"].split()[0]
-    year, month, day = date.split("-")
+    date_str = item.get("date")
+    date_obj = parse_epic_date(date_str)
+
+    year = date_obj.strftime("%Y")
+    month = date_obj.strftime("%m")  # две цифры с ведущим нулём
+    day = date_obj.strftime("%d")
+
     image_name = item["image"]
     return f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{image_name}.png?api_key={api_key}"
 
@@ -33,10 +67,19 @@ def download_epic_images(data, api_key, count=5, folder="epic_images"):
     """Скачивает изображения EPIC в указанную папку"""
     os.makedirs(folder, exist_ok=True)
     for item in data[:count]:
-        image_url = build_epic_image_url(item, api_key)
+        try:
+            image_url = build_epic_image_url(item, api_key)
+        except Exception as e:
+            # если дата или данные некорректны — логируем и продолжаем
+            print(f"Пропущен элемент: {e}")
+            continue
+
         filename = get_filename_from_url(image_url)
         save_path = os.path.join(folder, filename)
-        download_image(image_url, save_path)
+        try:
+            download_image(image_url, save_path)
+        except Exception as e:
+            print(f"Ошибка при скачивании {image_url}: {e}")
 
 
 def main():
