@@ -9,18 +9,18 @@ from utils import download_image, get_filename_from_url
 
 def fetch_epic_data(api_key):
     """Получает данные EPIC с NASA API"""
-    url = "https://api.nasa.gov/EPIC/api/natural"
+    api_url = "https://api.nasa.gov/EPIC/api/natural"
     params = {"api_key": api_key}
-    response = requests.get(url, params=params)
+    response = requests.get(api_url, params=params)
 
     if not response.ok:
         raise RuntimeError(f"Ошибка API EPIC: {response.status_code}")
 
-    data = response.json()
-    if not data:
+    epic_data = response.json()
+    if not epic_data:
         raise ValueError("Нет данных EPIC.")
 
-    return data
+    return epic_data
 
 
 def parse_epic_date(date_str):
@@ -45,46 +45,46 @@ def parse_epic_date(date_str):
             continue
 
     try:
-        date_only = date_str.split()[0]
-        return datetime.strptime(date_only, "%Y-%m-%d")
+        date_part = date_str.split()[0]
+        return datetime.strptime(date_part, "%Y-%m-%d")
     except Exception:
         raise ValueError(f"Не удалось распарсить дату: {date_str}")
 
 
-def build_epic_image_url(item, api_key):
+def build_epic_image_url(epic_item, api_key):
     """Строит URL изображения EPIC по данным item"""
-    date_str = item.get("date")
-    date_obj = parse_epic_date(date_str)
+    date_str = epic_item.get("date")
+    epic_date = parse_epic_date(date_str)
 
-    year = date_obj.strftime("%Y")
-    month = date_obj.strftime("%m")  # две цифры с ведущим нулём
-    day = date_obj.strftime("%d")
+    year = epic_date.strftime("%Y")
+    month = epic_date.strftime("%m")  # две цифры с ведущим нулём
+    day = epic_date.strftime("%d")
 
-    image_name = item["image"]
+    epic_image_name = epic_item["image"]
 
-    base_url = f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{image_name}.png"
-    params = {"api_key": api_key}
+    image_base_url = f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{epic_image_name}.png"
+    query_params = {"api_key": api_key}
 
     # Формируем URL с GET-параметрами
-    query_string = urllib.parse.urlencode(params)
-    full_url = f"{base_url}?{query_string}"
-    return full_url
+    query_string = urllib.parse.urlencode(query_params)
+    image_full_url = f"{image_base_url}?{query_string}"
+    return image_full_url
 
 def download_epic_images(data, api_key, count=5, folder="epic_images"):
     """Скачивает изображения EPIC в указанную папку"""
     os.makedirs(folder, exist_ok=True)
-    for item in data[:count]:
+    for epic_item in data[:count]:
         try:
-            image_url = build_epic_image_url(item, api_key)
+            image_url = build_epic_image_url(epic_item, api_key)
         except Exception as e:
             # если дата или данные некорректны — логируем и продолжаем
             print(f"Пропущен элемент: {e}")
             continue
 
-        filename = get_filename_from_url(image_url)
-        save_path = os.path.join(folder, filename)
+        photo_filename = get_filename_from_url(image_url)
+        photo_save_path = os.path.join(folder, photo_filename)
         try:
-            download_image(image_url, save_path)
+            download_image(image_url, photo_save_path)
         except Exception as e:
             print(f"Ошибка при скачивании {image_url}: {e}")
 
@@ -101,8 +101,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        data = fetch_epic_data(api_key)
-        download_epic_images(data, api_key, args.count)
+        epic_data = fetch_epic_data(api_key)
+        download_epic_images(epic_data, api_key, args.count)
     except Exception as e:
         print(e)
 
