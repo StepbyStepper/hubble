@@ -4,25 +4,50 @@ import requests
 from dotenv import load_dotenv
 from utils import download_image, get_filename_from_url
 
-def fetch_nasa_apod(api_key, count=5):
+
+def get_apod_data(api_key, count=5):
+    """Получает JSON-данные от NASA APOD API."""
     url = "https://api.nasa.gov/planetary/apod"
     params = {"api_key": api_key, "count": count}
     response = requests.get(url, params=params)
 
-    if not response.ok:
-        print(f"Ошибка API NASA: {response.status_code}")
-        return
+    if response.status_code == 403:
+        raise RuntimeError("Доступ запрещён: проверьте свой API ключ NASA (403 Forbidden)")
 
+    if not response.ok:
+        raise RuntimeError(f"Ошибка API NASA: {response.status_code}")
+
+    return response.json()
+
+
+def save_apod_images(data):
+    """Сохраняет изображения APOD из полученных данных."""
     os.makedirs("nasa_images", exist_ok=True)
-    for data in response.json():
-        if data.get("media_type") != "image":
+
+    for item in data:
+        if item.get("media_type") != "image":
             continue
-        image_url = data.get("hdurl") or data.get("url")
-        title = data.get("title", "Без названия")
+
+        image_url = item.get("hdurl") or item.get("url")
+        if not image_url:
+            continue
+
+        title = item.get("title", "Без названия")
         filename = get_filename_from_url(image_url)
         save_path = os.path.join("nasa_images", filename)
+
         download_image(image_url, save_path)
         print(f"Скачано: {title}")
+
+
+def fetch_nasa_apod(api_key, count=5):
+    """Основная функция: получает и сохраняет изображения APOD."""
+    try:
+        data = get_apod_data(api_key, count)
+        save_apod_images(data)
+    except Exception as e:
+        print(f"Ошибка: {e}")
+
 
 def main():
     load_dotenv()
@@ -31,11 +56,12 @@ def main():
         print("Ошибка: нет API ключа NASA.")
         return
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Скачивание изображений NASA APOD")
     parser.add_argument("--count", type=int, default=5, help="Сколько фото скачать")
     args = parser.parse_args()
 
     fetch_nasa_apod(api_key, args.count)
+
 
 if __name__ == "__main__":
     main()
