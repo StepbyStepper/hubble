@@ -1,4 +1,5 @@
 import argparse
+import urllib.parse
 import os
 import requests
 from datetime import datetime
@@ -60,8 +61,14 @@ def build_epic_image_url(item, api_key):
     day = date_obj.strftime("%d")
 
     image_name = item["image"]
-    return f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{image_name}.png?api_key={api_key}"
 
+    base_url = f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{image_name}.png"
+    params = {"api_key": api_key}
+
+    # Формируем URL с GET-параметрами
+    query_string = urllib.parse.urlencode(params)
+    full_url = f"{base_url}?{query_string}"
+    return full_url
 
 def download_epic_images(data, api_key, count=5, folder="epic_images"):
     """Скачивает изображения EPIC в указанную папку"""
