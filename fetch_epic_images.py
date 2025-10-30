@@ -100,11 +100,8 @@ def main():
     parser.add_argument("--count", type=int, default=5, help="Сколько фото скачать")
     args = parser.parse_args()
 
-    try:
-        epic_data = fetch_epic_data(api_key)
-        download_epic_images(epic_data, api_key, args.count)
-    except Exception as e:
-        print(e)
+    epic_data = fetch_epic_data(api_key)
+    download_epic_images(epic_data, api_key, args.count)
 
 
 if __name__ == "__main__":

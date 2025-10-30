@@ -42,10 +42,7 @@ def main():
         list_launches()
         return
 
-    try:
-        photos_to_download = get_spacex_photos(args.launch_id)
-    except requests.RequestException as e:
-        print(f"Ошибка запроса: {e}")
+    photos_to_download = get_spacex_photos(args.launch_id)
 
     if not photos_to_download:
         print("Нет фото для скачивания.")
