@@ -42,11 +42,8 @@ def save_apod_images(data):
 
 def fetch_nasa_apod(api_key, count=5):
     """Основная функция: получает и сохраняет изображения APOD."""
-    try:
-        data = get_apod_data(api_key, count)
-        save_apod_images(data)
-    except Exception as e:
-        print(f"Ошибка: {e}")
+    data = get_apod_data(api_key, count)
+    save_apod_images(data)
 
 
 def main():
@@ -60,7 +57,14 @@ def main():
     parser.add_argument("--count", type=int, default=5, help="Сколько фото скачать")
     args = parser.parse_args()
 
-    fetch_nasa_apod(api_key, args.count)
+    try:
+        fetch_nasa_apod(api_key, args.count)
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка сети: {e}")
+    except RuntimeError as e:
+        print(f"Ошибка API: {e}")
+    except Exception as e:
+        print(f"Неизвестная ошибка: {e}")
 
 
 if __name__ == "__main__":
