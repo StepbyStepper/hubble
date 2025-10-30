@@ -52,23 +52,24 @@ def parse_epic_date(date_str):
 
 
 def build_epic_image_url(epic_item, api_key):
-    """Строит URL изображения EPIC по данным item"""
+    """Строит корректный URL с кодированными параметрами."""
     date_str = epic_item.get("date")
     epic_date = parse_epic_date(date_str)
 
     year = epic_date.strftime("%Y")
-    month = epic_date.strftime("%m")  # две цифры с ведущим нулём
+    month = epic_date.strftime("%m")
     day = epic_date.strftime("%d")
 
     epic_image_name = epic_item["image"]
 
-    image_base_url = f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{epic_image_name}.png"
-    query_params = {"api_key": api_key}
+    # базовый путь
+    base = f"https://api.nasa.gov/EPIC/archive/natural/{year}/{month}/{day}/png/{epic_image_name}.png"
 
-    # Формируем URL с GET-параметрами
-    query_string = urllib.parse.urlencode(query_params)
-    image_full_url = f"{image_base_url}?{query_string}"
-    return image_full_url
+    # безопасно формируем полный URL
+    params = {"api_key": api_key}
+    url_parts = list(urllib.parse.urlparse(base))
+    url_parts[4] = urllib.parse.urlencode(params)  # помещаем параметры в query
+    return urllib.parse.urlunparse(url_parts)
 
 def download_epic_images(data, api_key, count=5, folder="epic_images"):
     """Скачивает изображения EPIC в указанную папку"""
